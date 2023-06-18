@@ -3,6 +3,7 @@ package com.rame.apiaggregationservice.service;
 import com.rame.apiaggregationservice.model.AggregateResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
@@ -43,19 +44,7 @@ public class AggregationService {
 
         try {
 
-//            BlockingQueue<List<String>> pricingQ =  new LinkedBlockingQueue<List<String>>();
-//            BlockingQueue<List<String>> trackQ =  new LinkedBlockingQueue<List<String>>();
-//            BlockingQueue<List<String>> shipmentsQ =  new LinkedBlockingQueue<List<String>>();
-//
-//            pricingQ.put(pricingParams);
-//            trackQ.put(trackParams);
-//            shipmentsQ.put(shipmentParams);
-//
-//            if(pricingQ.size() == 5) {
-//                consumePricingWebService1(pricingParams);
-//            } else {
-//                pricingQ.put(pricingParams);
-//            }
+//            consolidatePricingQueryParams(pricingParams);
 
             String pricingResponse = consumePricingWebService1(pricingParams).body();
             String trackResponse = consumeTrackWebService1(trackParams).body();
@@ -73,6 +62,28 @@ public class AggregationService {
         }
 
         return Mono.just(response);
+    }
+
+    private List<String> consolidatePricingQueryParams(List<String> pricingParams) throws InterruptedException {
+        List<String> result = new ArrayList<>(5);
+        BlockingQueue<List<String>> queue = new LinkedBlockingQueue<>();
+
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        if(pricingParams.size() < 5) {
+
+        } else {
+            queue.put(pricingParams);
+        }
+
+        if (queue.size() > 0) {
+            List<String> strs = queue.take();
+            if(result.size() < 5) {
+                result.addAll(strs);
+            }
+        }
+
+        return result;
+
     }
 
     public HttpResponse<String> consumePricingWebService1(List<String> queries) throws URISyntaxException, IOException, InterruptedException {
