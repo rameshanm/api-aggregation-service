@@ -1,0 +1,13 @@
+package com.rame.apiaggregationservice;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class ApiAggregationServiceApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
